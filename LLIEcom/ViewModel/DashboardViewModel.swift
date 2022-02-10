@@ -11,45 +11,34 @@ class DashboardViewModel {
     var apiResponse:((ServiceError?) ->Void)?
     var updateUI:(() ->Void)?
     var stores = [Store]()
-    private var products = [Product]()
-    var storeProducts = [Product]()
+    var products = [Product]()
     var cart = [CartItem]()
-    
-    var selectedStore: String? {
+    var selectedStore: String = "" {
         didSet {
-            storeProducts = products.filter({$0.storeId == selectedStore})
-            updateUI?()
+            getProducts(selectedStore)
         }
     }
-    var error: ServiceError?
     init() {
-        error = nil
-        getStoresAndProduct()
+        getStores()
     }
-    private func getStoresAndProduct() {
-        let group = DispatchGroup()
-        group.enter()
+    private func getStores() {
         DashboardAPI().getStores {[weak self] (storesInfo: StoresInfo?, error) in
             guard let self = self else { return }
             DispatchQueue.main.async {
                 self.stores = storesInfo?.stores ?? []
-                self.error = error
-                group.leave()
+                self.apiResponse?(error)
             }
         }
-        group.enter()
-        DashboardAPI().getProducts(completion: {[weak self] (products: Products?, error) in
+    }
+    
+    func getProducts(_ storeId: String) {
+        DashboardAPI().getProducts(storeId: storeId, completion: {[weak self] (products: [Product]?, error) in
             guard let self = self else { return }
             DispatchQueue.main.async {
-                self.products = products?.items ?? []
-                self.error = error
-                group.leave()
+                self.products = products ?? []
+                self.updateUI?()
             }
         })
-        
-        group.notify(queue: .main) {
-            self.apiResponse?(self.error)
-        }
     }
     
     func updateCartItem(_ product: Product, add: Bool) {

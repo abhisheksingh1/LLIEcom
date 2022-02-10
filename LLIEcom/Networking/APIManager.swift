@@ -10,6 +10,7 @@ import Foundation
 enum EndPoints: String {
     case storesInfo
     case products
+    case orderDone
 }
 
 struct ServiceError: Error,Codable {
@@ -20,15 +21,17 @@ struct ServiceError: Error,Codable {
 struct APIManager {
     static let shared = APIManager()
     func loadAPIRequest<C:Codable>(request: EndPoints, completionHandler: @escaping (C?, ServiceError?) -> ()) {
-        do {
-            guard let jsonData = MockJsonHelper.readLocalFile(forName: request.rawValue) else  {
-                completionHandler(nil, ServiceError(status: 400, message: "Error in reading json data"))
-                return
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            do {
+                guard let jsonData = MockJsonHelper.readLocalFile(forName: request.rawValue) else  {
+                    completionHandler(nil, ServiceError(status: 400, message: "Error in reading json data"))
+                    return
+                }
+                let parsedResponse = try JSONDecoder().decode(C.self, from: jsonData)
+                completionHandler(parsedResponse, nil)
+            } catch  {
+                completionHandler(nil, ServiceError(status: 400, message: error.localizedDescription))
             }
-            let parsedResponse = try JSONDecoder().decode(C.self, from: jsonData)
-            completionHandler(parsedResponse, nil)
-        } catch  {
-            completionHandler(nil, ServiceError(status: 400, message: error.localizedDescription))
         }
     }
 }

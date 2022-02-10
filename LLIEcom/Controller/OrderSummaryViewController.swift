@@ -6,27 +6,98 @@
 //
 
 import UIKit
+import ProgressHUD
 
 class OrderSummaryViewController: UIViewController {
     @IBOutlet weak var OrderSummaryTableView: UITableView!
     @IBOutlet weak var totalPriceLbl: UILabel!
     @IBOutlet weak var addressTextView: UITextView!
     @IBOutlet weak var confirmOrderBtn: UIButton!
+    @IBOutlet weak var confirmBtnBottomConstraint: NSLayoutConstraint!
     var cartItem = [CartItem]()
     var summaryViewModel: OrderSummaryViewModel!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.navigationController?.isNavigationBarHidden = false
         setupViewModel()
+        configureUI()
+        setupTextView()
+        setKeyboardObserver()
     }
     
+    
+    func configureUI() {
+        enableConfirmButton(false)
+        setupTableView()
+        self.totalPriceLbl.text = "₹ \(self.summaryViewModel.getTotalAmount())"
+    }
     func setupViewModel() {
         summaryViewModel = OrderSummaryViewModel(cartItem)
+        summaryViewModel.apiResponse = {  [weak self] (orderCompletionResponse, error) in
+            DispatchQueue.main.async {
+                ProgressHUD.dismiss()
+            }
+            guard let self = self else { return }
+            guard error == nil else {
+                self.showAlertMessage(Constants.alerttitle, error?.message ?? "")
+                return
+            }
+            self.pushToSuccessScreen()
+        }
+    }
+    func setupTableView() {
+        OrderSummaryTableView.rowHeight = UITableView.automaticDimension
+        OrderSummaryTableView.estimatedRowHeight = 60
+        OrderSummaryTableView.tableFooterView = UIView(frame: .zero)
+    }
+    func setupTextView() {
+        addressTextView.layer.borderWidth = 1
+        addressTextView.layer.borderColor = UIColor.lightGray.cgColor
+        addressTextView.delegate = self
+    }
+    
+    func setKeyboardObserver() {
+        let notifier = NotificationCenter.default
+        notifier.addObserver(self,
+                             selector: #selector(self.keyboardWillShow(_:)),
+                             name: UIWindow.keyboardWillShowNotification,
+                             object: nil)
+        notifier.addObserver(self,
+                             selector: #selector(self.keyboardWillHide(_:)),
+                             name: UIWindow.keyboardWillHideNotification,
+                             object: nil)
     }
     
     @IBAction func confirmOrderBtnAction(_ sender: UIButton) {
-        
+        ProgressHUD.show()
+        summaryViewModel.postCartItems(addressTextView.text)
     }
     
+    func pushToSuccessScreen() {
+        let controller = OrderSuccessViewController.instantiateFromStoryboard()
+        self.navigationController?.pushViewController(controller, animated: false)
+    }
+    
+    @objc func keyboardWillShow(_ notification:Notification) {
+        if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
+            confirmBtnBottomConstraint.constant = keyboardSize.height
+        }
+    }
+    
+    @objc func keyboardWillHide(_ notification:Notification) {
+        if ((notification.userInfo?[UIResponder.keyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue) != nil {
+            confirmBtnBottomConstraint.constant = 12.0
+        }
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        self.view.endEditing(true)
+    }
+    
+    func enableConfirmButton(_ enable: Bool) {
+        self.confirmOrderBtn.isEnabled = enable
+    }
     
     /*
     // MARK: - Navigation
@@ -51,5 +122,11 @@ extension OrderSummaryViewController: UITableViewDelegate, UITableViewDataSource
         }
         cell.configure(cartItem[indexPath.row])
         return cell
+    }
+}
+
+extension OrderSummaryViewController: UITextViewDelegate {
+    func textViewDidChange(_ textView: UITextView) {
+        enableConfirmButton((textView.text.trimmingCharacters(in: .whitespacesAndNewlines)).count > 0)
     }
 }

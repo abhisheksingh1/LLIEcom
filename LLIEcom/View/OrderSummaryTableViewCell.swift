@@ -34,7 +34,9 @@ class OrderSummaryTableViewCell: UITableViewCell {
         productImage.sd_setImage(with: URL(string: item.product.url ?? ""), placeholderImage: nil, options: [], completed: nil)
         nameLbl.text = item.product.name
         descLbl.text = item.product.description
-        priceLbl.text = "₹ \(item.product.price)"
+        if let price = item.product.price {
+            priceLbl.text = "₹ \(price)"
+        }
         quantityLbl.text = "Qty: \(item.quantity)"
     }
 

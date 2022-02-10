@@ -49,7 +49,7 @@
             "storeId":"1"
         },
         {
-            "id":"llime006",
+            "id":"llime007",
             "name":"Polo T-Shirt6",
             "description":"Striped Men Polo Neck White T-Shirt",
             "price":"1350",
@@ -57,12 +57,28 @@
             "storeId":"1"
         },
         {
-            "id":"llime007",
+            "id":"llime008",
             "name":"Polo T-Shirt7",
             "description":"Striped Men Polo Neck White T-Shirt",
             "price":"1500",
             "url":"https://i.ibb.co/sJ3RJDM/14.jpg",
             "storeId":"1"
+        },
+        {
+            "id":"llime009",
+            "name":"Silk Saree",
+            "description":"Silk Saree Blouse Designs (2022) Simple Pattu Catalogue",
+            "price":"7000",
+            "url":"https://i.ibb.co/z6CKdb6/sari.jpg",
+            "storeId":"2"
+        },
+        {
+            "id":"llime0010",
+            "name":"Silk Saree_1",
+            "description":"Silk Saree Blouse Designs (2022) Simple Pattu Catalogue",
+            "price":"8000",
+            "url":"https://i.ibb.co/z6CKdb6/sari.jpg",
+            "storeId":"2"
         }
     ]
 }

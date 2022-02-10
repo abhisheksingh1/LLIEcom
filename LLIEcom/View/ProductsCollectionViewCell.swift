@@ -37,7 +37,7 @@ class ProductsCollectionViewCell: UICollectionViewCell {
         updateCount?(false)
     }
     
-    func configure() {
+    func configure(_ cart: [CartItem]) {
         self.layer.borderWidth = 1
         self.layer.borderColor = UIColor.lightGray.cgColor
         nameLbl.text = product.name
@@ -45,6 +45,7 @@ class ProductsCollectionViewCell: UICollectionViewCell {
         if let proPrice = product.price {
             priceLbl.text = "₹ \(proPrice)"
         }
-        count = 0
+        let cartItem = cart.filter({$0.product.id == product.id}).first
+        count = cartItem?.quantity ?? 0
     }
 }

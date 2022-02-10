@@ -21,14 +21,18 @@ class DashboardViewController: UIViewController {
     @IBOutlet weak var itemsCountLbl: UILabel!
     @IBOutlet weak var itemsStackView: UIStackView!
     var dashboardViewModel: DashboardViewModel!
-
+    var selectedIndex: Int = 0
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
         ProgressHUD.show()
         hideView(true)
         configureUI()
         setupViewModel()
+    }
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.isNavigationBarHidden = true
     }
     
     func configureUI() {
@@ -57,6 +61,9 @@ class DashboardViewController: UIViewController {
         }
         
         dashboardViewModel.updateUI = { [weak self] in
+            DispatchQueue.main.async {
+                ProgressHUD.dismiss()
+            }
             guard let self = self else { return }
             DispatchQueue.main.async {
                 self.productsCollectionView.reloadData()
@@ -101,7 +108,10 @@ class DashboardViewController: UIViewController {
         hideView()
         self.storeInfoCollectionView.reloadData()
         guard !dashboardViewModel.stores.isEmpty else { return }
-        dashboardViewModel.selectedStore = dashboardViewModel.stores[0].id
+        if let storeId = dashboardViewModel.stores[0].id {
+            ProgressHUD.show()
+            dashboardViewModel.selectedStore = storeId
+        }
     }
     
     func hideView(_ hide: Bool = false) {
@@ -110,8 +120,16 @@ class DashboardViewController: UIViewController {
         self.bottomView.isHidden = hide
     }
     
+    func updateItemDetailUI() {
+        let boolVal = self.dashboardViewModel.cart.count > 0
+        self.btnOrderSummary.isEnabled = boolVal
+        self.itemsStackView.isHidden = !boolVal
+        self.itemsCountLbl.text = boolVal ?  "\(self.dashboardViewModel.cart.count)" : "0"
+    }
+    
     @IBAction func btnOrderSummaryAction(_ sender: UIButton) {
         let controller = OrderSummaryViewController.instantiateFromStoryboard()
+        controller.cartItem = self.dashboardViewModel.cart
         self.navigationController?.pushViewController(controller, animated: false)
     }
     
@@ -124,7 +142,7 @@ extension DashboardViewController: UICollectionViewDelegate, UICollectionViewDat
         case storeInfoCollectionView:
             return dashboardViewModel.stores.count
         case productsCollectionView:
-            return dashboardViewModel.storeProducts.count
+            return dashboardViewModel.products.count
         default:
             return 0
         }
@@ -136,23 +154,22 @@ extension DashboardViewController: UICollectionViewDelegate, UICollectionViewDat
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: StoreInfoCollectionViewCell.identifier, for: indexPath) as? StoreInfoCollectionViewCell else {
                 return UICollectionViewCell()
             }
+            cell.storeNameLbl.backgroundColor = selectedIndex == indexPath.row ? .lightGray : .clear
             cell.configure(dashboardViewModel.stores[indexPath.row])
             return cell
         case productsCollectionView:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ProductsCollectionViewCell.identifier, for: indexPath) as? ProductsCollectionViewCell else {
                 return UICollectionViewCell()
             }
-            cell.product = dashboardViewModel.storeProducts[indexPath.row]
-            cell.configure()
+            cell.product = dashboardViewModel.products[indexPath.row]
+            cell.configure(self.dashboardViewModel.cart)
+            
             cell.updateCount = {[weak self] (add) in
                 guard let self = self else { return }
                 self.dashboardViewModel.updateCartItem(cell.product, add: add)
                 print(self.dashboardViewModel.cart)
                 DispatchQueue.main.async {
-                    let boolVal = self.dashboardViewModel.cart.count > 0
-                    self.btnOrderSummary.isEnabled = boolVal
-                    self.itemsStackView.isHidden = !boolVal
-                    self.itemsCountLbl.text = boolVal ?  "\(self.dashboardViewModel.cart.count)" : "0"
+                    self.updateItemDetailUI()
                 }
                 if let cartItem = self.dashboardViewModel.getCartItem(cell.product.id) {
                     cell.count = cartItem.quantity
@@ -163,6 +180,17 @@ extension DashboardViewController: UICollectionViewDelegate, UICollectionViewDat
             return cell
         default:
             return UICollectionViewCell()
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        if collectionView == storeInfoCollectionView {
+            if let storeId = dashboardViewModel.stores[indexPath.row].id {
+                selectedIndex = indexPath.row
+                storeInfoCollectionView.reloadData()
+                ProgressHUD.show()
+                dashboardViewModel.selectedStore = storeId
+            }
         }
     }
 }
