@@ -15,6 +15,8 @@ class OrderSummaryViewModel {
         self.cartItem = cartItem
     }
     
+    /// Get total cart amount
+    /// - Returns: total amount
     func getTotalAmount() -> String {
         var totalPrice = 0
         _ = cartItem.map { item in
@@ -23,6 +25,8 @@ class OrderSummaryViewModel {
         return "\(totalPrice)"
     }
     
+    /// Post Cart Items on confirm order
+    /// - Parameter address: user address
     func postCartItems(_ address: String) {
         OrderSummaryAPI().postCartItems(address: address, cart: cartItem) { response, error in
             self.apiResponse?(response, error)

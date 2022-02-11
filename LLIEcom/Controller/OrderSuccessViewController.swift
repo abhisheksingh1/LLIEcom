@@ -15,6 +15,16 @@ class OrderSuccessViewController: UIViewController {
         self.navigationController?.isNavigationBarHidden = true
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.isNavigationBarHidden = true
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.navigationController?.isNavigationBarHidden = false
+    }
+    
     @IBAction func btnBackAction(_ sender: UIButton) {
         for vc in self.navigationController!.viewControllers {
             if let dashboardVC = vc as? DashboardViewController {

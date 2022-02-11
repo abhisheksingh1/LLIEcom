@@ -19,13 +19,11 @@ class OrderSummaryViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationController?.isNavigationBarHidden = false
         setupViewModel()
         configureUI()
         setupTextView()
         setKeyboardObserver()
     }
-    
     
     func configureUI() {
         enableConfirmButton(false)
@@ -95,6 +93,8 @@ class OrderSummaryViewController: UIViewController {
         self.view.endEditing(true)
     }
     
+    /// Enable and Disable Confirm Button
+    /// - Parameter enable: Bool
     func enableConfirmButton(_ enable: Bool) {
         self.confirmOrderBtn.isEnabled = enable
     }
@@ -110,6 +110,7 @@ class OrderSummaryViewController: UIViewController {
     */
 }
 
+//MARK: UITableViewDelegate, UITableViewDataSource
 extension OrderSummaryViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return cartItem.count
@@ -125,6 +126,7 @@ extension OrderSummaryViewController: UITableViewDelegate, UITableViewDataSource
     }
 }
 
+//MARK: UITextViewDelegate
 extension OrderSummaryViewController: UITextViewDelegate {
     func textViewDidChange(_ textView: UITextView) {
         enableConfirmButton((textView.text.trimmingCharacters(in: .whitespacesAndNewlines)).count > 0)

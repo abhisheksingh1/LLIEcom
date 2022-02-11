@@ -8,6 +8,10 @@
 import Foundation
 
 class MockJsonHelper {
+    
+    /// Read Local Json File
+    /// - Parameter name: json file name
+    /// - Returns: Data
     class func readLocalFile(forName name: String)-> Data? {
         do {
             if let bundlePath = Bundle.main.path(forResource: name,

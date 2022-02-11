@@ -25,14 +25,21 @@ class DashboardViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.navigationItem.title = "LLI ECOM"
         ProgressHUD.show()
         hideView(true)
         configureUI()
         setupViewModel()
     }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.navigationController?.isNavigationBarHidden = true
+        self.navigationItem.title = "LLI ECOM"
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.navigationItem.title = "Back"
     }
     
     func configureUI() {
@@ -164,13 +171,12 @@ extension DashboardViewController: UICollectionViewDelegate, UICollectionViewDat
             cell.product = dashboardViewModel.products[indexPath.row]
             cell.configure(self.dashboardViewModel.cart)
             
+            //Handle updateCount
             cell.updateCount = {[weak self] (add) in
                 guard let self = self else { return }
                 self.dashboardViewModel.updateCartItem(cell.product, add: add)
                 print(self.dashboardViewModel.cart)
-                DispatchQueue.main.async {
-                    self.updateItemDetailUI()
-                }
+                self.updateItemDetailUI()
                 if let cartItem = self.dashboardViewModel.getCartItem(cell.product.id) {
                     cell.count = cartItem.quantity
                 } else  {

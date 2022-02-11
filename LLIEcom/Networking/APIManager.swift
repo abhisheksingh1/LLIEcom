@@ -20,8 +20,9 @@ struct ServiceError: Error,Codable {
 
 struct APIManager {
     static let shared = APIManager()
+    
     func loadAPIRequest<C:Codable>(request: EndPoints, completionHandler: @escaping (C?, ServiceError?) -> ()) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             do {
                 guard let jsonData = MockJsonHelper.readLocalFile(forName: request.rawValue) else  {
                     completionHandler(nil, ServiceError(status: 400, message: "Error in reading json data"))

@@ -21,6 +21,8 @@ class DashboardViewModel {
     init() {
         getStores()
     }
+    
+    /// Get Stores
     private func getStores() {
         DashboardAPI().getStores {[weak self] (storesInfo: StoresInfo?, error) in
             guard let self = self else { return }
@@ -31,6 +33,8 @@ class DashboardViewModel {
         }
     }
     
+    /// Get Products for store
+    /// - Parameter storeId: Store id
     func getProducts(_ storeId: String) {
         DashboardAPI().getProducts(storeId: storeId, completion: {[weak self] (products: [Product]?, error) in
             guard let self = self else { return }
@@ -41,6 +45,10 @@ class DashboardViewModel {
         })
     }
     
+    /// Update selected item in Cart
+    /// - Parameters:
+    ///   - product: product/item
+    ///   - add: add or remove
     func updateCartItem(_ product: Product, add: Bool) {
         if let index = cart.firstIndex(where: {$0.product.id == product.id}) {
             let quantity =  cart[index].quantity
@@ -59,6 +67,9 @@ class DashboardViewModel {
         }
     }
     
+    /// Get Cart Item
+    /// - Parameter id:product Id
+    /// - Returns: selected item
     func getCartItem(_ id: String?) -> CartItem? {
         guard let id = id else { return nil }
         return cart.filter({$0.product.id == id}).first
